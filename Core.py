@@ -1,13 +1,45 @@
 import random
+import numpy
+import time
+import copy
 
 class Core:
     def __init__(self, cols, rows, it):
         self.__cols = cols
         self.__rows = rows
         self.__it = it
-        self.__matrix = [[0 for x in range(self.__cols)] for y in range(self.__rows)]
+        self.generateEmptyArray(rows, cols)
         self.generateMap()
         self.__debug = False
+
+    def generateEmptyArray(self, ySize, xSize):
+        self.__matrix = [[0 for x in range(xSize)] for y in range(ySize)]
+
+
+    def generate10CellLine(self):
+        self.generateEmptyArray(20, 20)
+        self.__matrix[9][5] = 1
+        self.__matrix[9][6] = 1
+        self.__matrix[9][7] = 1
+        self.__matrix[9][8] = 1
+        self.__matrix[9][9] = 1
+        self.__matrix[9][10] = 1
+        self.__matrix[9][11] = 1
+        self.__matrix[9][12] = 1
+        self.__matrix[9][13] = 1
+        self.__matrix[9][14] = 1
+
+    def genFromText(self, text):
+        count = text.count("\n")
+        self.generateEmptyArray(count, count)
+        text = text.replace("\n", "")
+        counter = 0
+        for y in range(count):
+            for x in range(count):
+                if int(text[counter]) == 1:
+                    print(int(text[counter]))
+                self.__matrix[y][x] = int(text[counter])
+                counter+=1
 
     def setDebug(self, debug):
         self.__debug = debug
@@ -19,7 +51,7 @@ class Core:
     def generateMap(self):
         for y in range(self.getMatrixHeight()):
             for x in range(self.getMatrixWidth()):
-                self.__matrix[y][x] = random.randint(0, 1)
+                self.__matrix[y][x] = numpy.random.binomial(1,0.25)
 
     def getIterationsLeft(self):
         return self.__it
@@ -36,8 +68,9 @@ class Core:
     def getValueAtPosition(self, y, x):
         return self.__matrix[y][x]
 
-    def setValueAtPosition(self, y, x, value):
-        self.__matrix[y][x] = value
+    def setValueAtPosition(self, tmpArray, y, x, value):
+        tmpArray[y][x] = value
+        return tmpArray
 
     def getLivingCellsCount(self):
         counter = 0
@@ -107,26 +140,28 @@ class Core:
             return 0
         return self.getValueAtPosition(tempY, tempX)
 
-    def computeValue(self, y, x, counter):
+    def computeValue(self, y, x, counter, tmpArray):
         currentValue = self.getValueAtPosition(y, x)
         if currentValue is 0:
             if counter == 3:
                 self.debugPrint("Reproduction")
-                self.setValueAtPosition(y, x, 1)
+                return self.setValueAtPosition(tmpArray, y, x, 1)
         else:
             if counter > 3:
                 self.debugPrint("Overpopulation")
-                self.setValueAtPosition(y, x, 0)
+                return self.setValueAtPosition(tmpArray, y, x, 0)
             elif counter == 2 or counter == 3:
                 self.debugPrint("Stasis")
-                # self.setValueAtPosition(y, x, 1)
+                return self.setValueAtPosition(tmpArray, y, x, 1)
             elif counter < 2:
                 self.debugPrint("Underpopulation")
-                self.setValueAtPosition(y, x, 0)
+                return self.setValueAtPosition(tmpArray, y, x, 0)
+        return tmpArray
 
     def iterate(self):
         if self.__it is 0:
             return False
+        tmpArray = copy.deepcopy(self.__matrix)
         for y in range(self.getMatrixHeight()):
             for x in range(self.getMatrixWidth()):
                 counter = self.getLeftCell(y, x)
@@ -137,7 +172,8 @@ class Core:
                 counter += self.getTopRightCell(y, x)
                 counter += self.getBottomLeftCell(y, x)
                 counter += self.getBottomRightCell(y, x)
-                self.computeValue(y, x, counter)
+                tmpArray = self.computeValue(y, x, counter, tmpArray)
+        self.__matrix = copy.deepcopy(tmpArray)
         self.__it = self.__it - 1
         return True
 

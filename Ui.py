@@ -10,17 +10,22 @@ class Ui:
         canvasMap = copy.deepcopy(core.getMatrix())
         for y in range(core.getMatrixHeight()):
             for x in range(core.getMatrixWidth()):
+                leftX = x * (400 / 40)
+                rightX = leftX + 40
+                topY = y * (400 / 40)
+                botY = topY + 40
                 if core.getValueAtPosition(y, x) == 0:
-                    canvasMap[y][x] = canvas.create_rectangle((400 / 40), (400 / 40), y * (400 / 40), x * (400 / 40), fill="black")
+                    canvasMap[y][x] = canvas.create_rectangle(leftX, topY, rightX, botY, fill="black")
                 else:
-                    canvasMap[y][x] = canvas.create_rectangle((400 / 40), (400 / 40), y * (400 / 40), x * (400 / 40), fill="white")
+                    canvasMap[y][x] = canvas.create_rectangle(leftX, topY, rightX, botY, fill="white")
         return canvasMap
 
     def onStartClick(self, y, x, it):
         self.__gameWin = Tk("Running")
         core = Core(x, y, it)
-        canvas = Canvas(self.__gameWin, width=200, height=200)
+        canvas = Canvas(self.__gameWin, width=400, height=400, background="black")
         map = self.initCanvasMap(core, canvas)
+        # canvas.create_rectangle(30, 20, 80, 40, fill="white")
         canvas.pack()
         for index in range(it):
 

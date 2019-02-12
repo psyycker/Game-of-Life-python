@@ -30,6 +30,9 @@ class Core:
     def getMatrixHeight(self):
         return len(self.__matrix)
 
+    def getMatrix(self):
+        return self.__matrix
+
     def getValueAtPosition(self, y, x):
         return self.__matrix[y][x]
 

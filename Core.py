@@ -20,7 +20,9 @@ class Core:
         for y in range(self.getMatrixHeight()):
             for x in range(self.getMatrixWidth()):
                 self.__matrix[y][x] = random.randint(0, 1)
-                print(self.__matrix[y][x])
+
+    def getIterationsLeft(self):
+        return self.__it
 
     def getMatrixWidth(self):
         return len(self.__matrix[0])
@@ -38,7 +40,7 @@ class Core:
         counter = 0
         for y in range(self.getMatrixHeight()):
             for x in range(self.getMatrixWidth()):
-                if self.getValueAtPosition(y, x) is 1:
+                if self.getValueAtPosition(y, x) == 1:
                     counter = counter + 1
         return counter
 
@@ -46,7 +48,7 @@ class Core:
         counter = 0
         for y in range(self.getMatrixHeight()):
             for x in range(self.getMatrixWidth()):
-                if self.getValueAtPosition(y, x) is 0:
+                if self.getValueAtPosition(y, x) == 0:
                     counter = counter + 1
         return counter
 
@@ -105,21 +107,23 @@ class Core:
     def computeValue(self, y, x, counter):
         currentValue = self.getValueAtPosition(y, x)
         if currentValue is 0:
-            if counter is 3:
+            if counter == 3:
                 self.debugPrint("Reproduction")
                 self.setValueAtPosition(y, x, 1)
         else:
             if counter > 3:
                 self.debugPrint("Overpopulation")
                 self.setValueAtPosition(y, x, 0)
-            elif counter is 2 or counter:
+            elif counter == 2 or counter == 3:
                 self.debugPrint("Stasis")
-                self.setValueAtPosition(y, x, 1)
+                # self.setValueAtPosition(y, x, 1)
             elif counter < 2:
                 self.debugPrint("Underpopulation")
                 self.setValueAtPosition(y, x, 0)
 
     def iterate(self):
+        if self.__it is 0:
+            return False
         for y in range(self.getMatrixHeight()):
             for x in range(self.getMatrixWidth()):
                 counter = self.getLeftCell(y, x)
@@ -131,5 +135,7 @@ class Core:
                 counter += self.getBottomLeftCell(y, x)
                 counter += self.getBottomRightCell(y, x)
                 self.computeValue(y, x, counter)
+        self.__it = self.__it - 1
+        return True
 
 

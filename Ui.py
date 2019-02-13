@@ -2,6 +2,8 @@ from tkinter import *
 from Core import Core
 import copy
 import os
+from chrono import Timer
+
 
 
 
@@ -23,15 +25,16 @@ class Ui:
                     canvasMap[y][x] = canvas.create_rectangle(leftX, topY, rightX, botY, fill="white")
         return canvasMap
 
-    def updateCanvasMap(self, core, canvasMap, canvas):
+    def updateCanvasMap(self, core, tmpArray, canvasMap, canvas):
         for y in range(core.getMatrixHeight()):
             for x in range(core.getMatrixWidth()):
-                if core.getValueAtPosition(y, x)== 1:
+                if core.getValueAtPosition(y, x) == tmpArray[y][x]:
+                    pass
+                if core.getValueAtPosition(y, x) == 1:
                     coul = "white"
                 else:
                     coul = "black"
                 canvas.itemconfig(canvasMap[y][x], fill=coul)
-
         return canvasMap
 
     def onStartClick(self, y, x, it):
@@ -41,8 +44,9 @@ class Ui:
         map = self.initCanvasMap(core, canvas)
         canvas.pack()
         for index in range(it):
-            core.iterate()
-            self.updateCanvasMap(core, map, canvas)
+            tmpArray = core.iterate()
+            self.updateCanvasMap(core, tmpArray, map, canvas)
+            core.setMatrix(tmpArray)
             self.__gameWin.update_idletasks()
             self.__gameWin.update()
         self.__gameWin.mainloop()
@@ -52,15 +56,19 @@ class Ui:
         confFile = open("confs/" + filename + ".txt", 'r')
         result = confFile.read()
         core = Core(0 ,0, it)
+        core.setTimer(False)
         core.genFromText(result)
         canvas = Canvas(self.__gameWin, width=self.WinX, height=self.WinY, background="black")
         map = self.initCanvasMap(core, canvas)
         canvas.pack()
         for index in range(it):
-            core.iterate()
-            self.updateCanvasMap(core, map, canvas)
-            self.__gameWin.update_idletasks()
-            self.__gameWin.update()
+            tmpArray = core.iterate()
+            with Timer() as timed:
+                self.updateCanvasMap(core, tmpArray, map, canvas)
+                core.setMatrix(tmpArray)
+                self.__gameWin.update_idletasks()
+                self.__gameWin.update()
+            print("Time spent: {0} seconds".format(timed.elapsed))
         self.__gameWin.mainloop()
 
 
@@ -70,8 +78,8 @@ class Ui:
             listbox.insert(END, name.replace(".txt", ""))
 
     def __init__(self):
-        self.WinX = 800
-        self.WinY = 800
+        self.WinX = 500
+        self.WinY = 500
         self.__masterWin = Tk("Game of Life")
         x = Entry(self.__masterWin)
         x.pack()
@@ -82,7 +90,7 @@ class Ui:
         listbox = Listbox(self.__masterWin)
         listbox.pack()
         self.genListBox(listbox)
-        specificButton = Button(self.__masterWin, text='10 Cells', command=lambda: self.onSpecificStartClick(listbox.get(ACTIVE), 1000))
+        specificButton = Button(self.__masterWin, text='Specific Schema', command=lambda: self.onSpecificStartClick(listbox.get(ACTIVE), 1000))
         specificButton.pack(side=LEFT, padx=5, pady=5)
         self.__masterWin.lift()
         self.__masterWin.attributes('-topmost', True)

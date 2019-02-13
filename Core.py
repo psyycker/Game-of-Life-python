@@ -2,6 +2,7 @@ import random
 import numpy
 import time
 import copy
+from chrono import Timer
 
 class Core:
     def __init__(self, cols, rows, it):
@@ -11,6 +12,7 @@ class Core:
         self.generateEmptyArray(rows, cols)
         self.generateMap()
         self.__debug = False
+        self.__timer = False
 
     def generateEmptyArray(self, ySize, xSize):
         self.__matrix = [[0 for x in range(xSize)] for y in range(ySize)]
@@ -41,8 +43,14 @@ class Core:
                 self.__matrix[y][x] = int(text[counter])
                 counter+=1
 
+    def setMatrix(self, array):
+        self.__matrix = array
+
     def setDebug(self, debug):
         self.__debug = debug
+
+    def setTimer(self, timer):
+        self.__timer = timer
 
     def debugPrint(self, value):
         if self.__debug:
@@ -160,21 +168,23 @@ class Core:
 
     def iterate(self):
         if self.__it is 0:
-            return False
+            return None
         tmpArray = copy.deepcopy(self.__matrix)
-        for y in range(self.getMatrixHeight()):
-            for x in range(self.getMatrixWidth()):
-                counter = self.getLeftCell(y, x)
-                counter += self.getRightCell(y, x)
-                counter += self.getTopCell(y, x)
-                counter += self.getBottomCell(y, x)
-                counter += self.getTopLeftCell(y, x)
-                counter += self.getTopRightCell(y, x)
-                counter += self.getBottomLeftCell(y, x)
-                counter += self.getBottomRightCell(y, x)
-                tmpArray = self.computeValue(y, x, counter, tmpArray)
-        self.__matrix = copy.deepcopy(tmpArray)
+        with Timer() as timed:
+            for y in range(self.getMatrixHeight()):
+                for x in range(self.getMatrixWidth()):
+                    counter = self.getLeftCell(y, x)
+                    counter += self.getRightCell(y, x)
+                    counter += self.getTopCell(y, x)
+                    counter += self.getBottomCell(y, x)
+                    counter += self.getTopLeftCell(y, x)
+                    counter += self.getTopRightCell(y, x)
+                    counter += self.getBottomLeftCell(y, x)
+                    counter += self.getBottomRightCell(y, x)
+                    tmpArray = self.computeValue(y, x, counter, tmpArray)
+        if self.__timer:
+            print("Time spent: {0} seconds".format(timed.elapsed))
         self.__it = self.__it - 1
-        return True
+        return tmpArray
 
 
